@@ -208,8 +208,12 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
 
       for (const representation of this.#structureRepresentations) {
         representation.setState({ transform: this.#structureTransform });
+        plugin.canvas3d?.update(representation, true);
       }
       this.#shapeHandle?.updateFrame(frame);
+      if (this.#shapeHandle) {
+        plugin.canvas3d?.update(this.#shapeHandle.representation, true);
+      }
       plugin.canvas3d?.requestDraw();
     }
 

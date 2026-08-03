@@ -120,9 +120,15 @@ export function MolStarSimulationViewport() {
   }, [selectedEntityId, status]);
 
   useEffect(() => {
-    let animationFrame = 0;
+    let lastTimestamp = performance.now();
+    let visualTime = getEngine().getState().time;
 
     const render = (): void => {
+      const timestamp = performance.now();
+      const deltaSeconds = Math.min(Math.max((timestamp - lastTimestamp) / 1000, 0), 0.1);
+      lastTimestamp = timestamp;
+      if (document.visibilityState === 'hidden') return;
+
       const storeState = simulationStore.getState();
       const liveState = getEngine().getState();
       const snapshot =
@@ -130,17 +136,26 @@ export function MolStarSimulationViewport() {
           ? undefined
           : storeState.frame.snapshots[storeState.scrubIndex];
 
+      if (snapshot) {
+        visualTime = snapshot.time;
+      } else if (storeState.running && !storeState.reducedMotion) {
+        // Canvas 합성이 포인터 이벤트에 묶이는 브라우저에서도 모션 위상은 독립적으로
+        // 진행한다. 속도 슬라이더는 시각 모션에도 완만하게 반영한다.
+        const motionRate = 0.25 + storeState.config.simulationSpeed * 1.75;
+        visualTime += deltaSeconds * motionRate;
+      }
+
       adapterRef.current?.updateFrame({
-        time: snapshot?.time ?? liveState.time,
+        time: visualTime,
         levels: snapshot?.levels ?? liveState.levels,
         signals: snapshot?.signals ?? liveState.signals,
         reducedMotion: storeState.reducedMotion,
       });
-      animationFrame = window.requestAnimationFrame(render);
     };
 
-    animationFrame = window.requestAnimationFrame(render);
-    return () => window.cancelAnimationFrame(animationFrame);
+    render();
+    const interval = window.setInterval(render, 1000 / 30);
+    return () => window.clearInterval(interval);
   }, []);
 
   const selected = selectedEntityId ? getEntity(selectedEntityId) : null;
