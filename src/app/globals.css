@@ -1,0 +1,130 @@
+@import 'tailwindcss';
+
+/**
+ * Project Tenase 디자인 토큰.
+ *
+ * 원격 폰트나 원격 자원을 어디에서도 참조하지 않는다. 서체 스택은 기기에 이미 있는
+ * 폰트에서 해결되므로, 이 애플리케이션은 실행 중에 네트워크 요청을 하지 않는다.
+ */
+@theme {
+  --color-surface-0: #05070d;
+  --color-surface-1: #0a0e18;
+  --color-surface-2: #111726;
+  --color-surface-3: #1a2235;
+  --color-surface-4: #232d45;
+  --color-line: #24304a;
+  --color-line-strong: #35446a;
+
+  --color-ink-0: #e8eefa;
+  --color-ink-1: #a9b7ce;
+  --color-ink-2: #6d7e9c;
+
+  --color-accent: #2dd4bf;
+  --color-accent-dim: #0f766e;
+  --color-activation: #38bdf8;
+  --color-binding: #c084fc;
+  --color-inhibition: #eab308;
+  --color-structural: #f43f5e;
+  --color-caution: #fb923c;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  color: var(--color-ink-0);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* 키보드 사용자를 위한, 눈에 잘 띄고 일관된 포커스 스타일. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 범위 입력이 주요 컨트롤이므로 트랙과 손잡이가 잘 보이게 한다. */
+input[type='range'] {
+  accent-color: var(--color-accent);
+}
+
+/* 장면에서 시선을 빼앗지 않는 얇은 스크롤바. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/**
+ * 모션 줄이기.
+ *
+ * `data-reduced-motion` 속성은 앱 안의 토글이 <html>에 설정하고, 미디어 쿼리는
+ * 운영체제 수준에서 이 설정을 밝혀 둔 사용자를 담당한다. 두 경로 모두 CSS 전환을
+ * 억제한다. 3D 레이어는 같은 스토어 플래그를 읽어 표류, 맥동, 카메라 감속을 따로
+ * 멈춘다.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@keyframes reaction-event-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.reaction-event-enter:first-child {
+  animation: reaction-event-arrive 320ms ease-out;
+}
+
+/* Mol*은 캔버스만 담당하도록 마운트한다. 주변 UI는 전부 React가 소유한다. */
+.molstar-viewport-host > .msp-plugin,
+.molstar-viewport-host .msp-plugin-content,
+.molstar-viewport-host .msp-layout-standard,
+.molstar-viewport-host .msp-layout-main,
+.molstar-viewport-host .msp-layout-static {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+
+.molstar-viewport-host .msp-viewport-controls,
+.molstar-viewport-host .msp-logo,
+.molstar-viewport-host .msp-layout-top,
+.molstar-viewport-host .msp-layout-bottom,
+.molstar-viewport-host .msp-layout-left,
+.molstar-viewport-host .msp-layout-right {
+  display: none !important;
+}
