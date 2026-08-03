@@ -18,7 +18,8 @@ next-env.d.ts
 *.tsbuildinfo
 
 # editors
-/.idea
+/.claude/
+/.idea/
 /.vscode
 *.swp
 
