@@ -6,7 +6,7 @@ import type { EntityId } from '@/simulation/types';
 import { structureRegistry } from '@/molecules/StructureRegistry';
 import { MolStarSelectionBridge } from '@/rendering/MolStarSelectionBridge';
 import type { RendererLifecycleState, SimulationRendererAdapter } from '@/rendering/types';
-import { simulationStore, useSimulationStore } from '@/store/simulationStore';
+import { getEngine, simulationStore, useSimulationStore } from '@/store/simulationStore';
 
 const QUICK_ENTITIES: readonly EntityId[] = [
   'factorIXa',
@@ -40,6 +40,9 @@ export function MolStarSimulationViewport() {
   const adapterRef = useRef<SimulationRendererAdapter | null>(null);
   const bridgeRef = useRef<MolStarSelectionBridge | null>(null);
   const selectedEntityId = useSimulationStore((state) => state.selectedEntityId);
+  const running = useSimulationStore((state) => state.running);
+  const reducedMotion = useSimulationStore((state) => state.reducedMotion);
+  const scrubIndex = useSimulationStore((state) => state.scrubIndex);
   const selectEntity = useSimulationStore((state) => state.selectEntity);
   const setWebglAvailable = useSimulationStore((state) => state.setWebglAvailable);
   const [status, setStatus] = useState<RendererLifecycleState>('idle');
@@ -116,11 +119,36 @@ export function MolStarSimulationViewport() {
     }
   }, [selectedEntityId, status]);
 
+  useEffect(() => {
+    let animationFrame = 0;
+
+    const render = (): void => {
+      const storeState = simulationStore.getState();
+      const liveState = getEngine().getState();
+      const snapshot =
+        storeState.scrubIndex === null
+          ? undefined
+          : storeState.frame.snapshots[storeState.scrubIndex];
+
+      adapterRef.current?.updateFrame({
+        time: snapshot?.time ?? liveState.time,
+        levels: snapshot?.levels ?? liveState.levels,
+        signals: snapshot?.signals ?? liveState.signals,
+        reducedMotion: storeState.reducedMotion,
+      });
+      animationFrame = window.requestAnimationFrame(render);
+    };
+
+    animationFrame = window.requestAnimationFrame(render);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
+
   const selected = selectedEntityId ? getEntity(selectedEntityId) : null;
   const selectedStructure = selectedEntityId
     ? structureRegistry.resolve(selectedEntityId)
     : null;
   const isReady = status === 'ready';
+  const motionActive = isReady && running && scrubIndex === null && !reducedMotion;
 
   return (
     <figure className="relative h-full min-h-[31rem] overflow-hidden rounded-xl border border-line bg-[#070b12] shadow-[0_22px_80px_rgba(0,0,0,0.28)]">
@@ -134,9 +162,20 @@ export function MolStarSimulationViewport() {
           <p className="mt-1 text-sm font-semibold text-white">Factor IXa · RCSB 6MV4</p>
           <p className="mt-0.5 text-[0.68rem] text-white/60">실험 X-ray 구조 · 개념적 관 배경</p>
         </div>
-        <span className={`rounded-full border px-2.5 py-1 text-[0.65rem] font-semibold backdrop-blur ${isReady ? 'border-accent/40 bg-accent/10 text-accent' : status === 'error' || status === 'context-lost' ? 'border-caution/50 bg-caution/10 text-caution' : 'border-line-strong bg-surface-1/75 text-ink-1'}`}>
-          {STATUS_LABELS[status]}
-        </span>
+        <div className="flex flex-col items-end gap-1.5">
+          <span className={`rounded-full border px-2.5 py-1 text-[0.65rem] font-semibold backdrop-blur ${isReady ? 'border-accent/40 bg-accent/10 text-accent' : status === 'error' || status === 'context-lost' ? 'border-caution/50 bg-caution/10 text-caution' : 'border-line-strong bg-surface-1/75 text-ink-1'}`}>
+            {STATUS_LABELS[status]}
+          </span>
+          {isReady ? (
+            <span className={`rounded-full border px-2 py-1 text-[0.58rem] font-semibold backdrop-blur ${motionActive ? 'border-accent/30 bg-black/55 text-accent' : 'border-white/10 bg-black/55 text-white/45'}`}>
+              {motionActive
+                ? '● 재생 · 6MV4 자전 · 노드 순환'
+                : reducedMotion
+                  ? '모션 줄이기 · 정지 자세'
+                  : 'Ⅱ 장면 일시정지'}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {!isReady ? (
@@ -163,12 +202,29 @@ export function MolStarSimulationViewport() {
           <p className="text-[0.6rem] uppercase tracking-[0.16em] text-white/50">선택된 엔티티</p>
           <p className="mt-0.5 text-xs font-semibold text-white">{selected?.label ?? '선택 없음'}</p>
           <p className="mt-0.5 text-[0.62rem] text-white/55">
-            {selectedStructure?.evidence === 'experimental'
+            {selectedEntityId === null
+              ? '전체 장면 · 자유 시점'
+              : selectedStructure?.evidence === 'experimental'
               ? `${selectedStructure.accession} · 실험 구조`
               : '명시된 개념 대체 표시'}
           </p>
         </div>
         <div className="flex max-w-full gap-1 overflow-x-auto rounded-lg border border-white/10 bg-black/55 p-1.5 backdrop-blur-md" aria-label="Mol* 분자 선택 브리지">
+          <button
+            type="button"
+            onClick={() => adapterRef.current?.resetCamera()}
+            className="whitespace-nowrap rounded-md px-2 py-1.5 text-[0.65rem] font-semibold text-white/55 transition hover:bg-white/10 hover:text-white"
+          >
+            시점 초기화
+          </button>
+          <button
+            type="button"
+            aria-pressed={selectedEntityId === null}
+            onClick={() => selectEntity(null)}
+            className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[0.65rem] font-semibold transition ${selectedEntityId === null ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/10 hover:text-white'}`}
+          >
+            선택 해제
+          </button>
           {QUICK_ENTITIES.map((id) => {
             const entity = getEntity(id);
             return (
@@ -185,6 +241,12 @@ export function MolStarSimulationViewport() {
           })}
         </div>
       </div>
+
+      {isReady ? (
+        <div className="pointer-events-none absolute bottom-[4.6rem] left-1/2 z-10 hidden -translate-x-1/2 rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[0.6rem] font-medium text-white/55 backdrop-blur-md md:block">
+          좌클릭 드래그 회전 · 우클릭/Ctrl+드래그 이동 · 휠 확대/축소
+        </div>
+      ) : null}
 
       <figcaption className="sr-only">
         Mol* Canvas3D에 실험 구조 Factor IXa 6MV4, 관 경계 custom shape, 그리고 구조가 배정되지 않은 엔티티의 개념 대체 표식이 표시된다.

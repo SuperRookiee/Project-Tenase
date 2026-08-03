@@ -3,7 +3,7 @@ import { Mesh } from 'molstar/lib/mol-geo/geometry/mesh/mesh';
 import { MeshBuilder } from 'molstar/lib/mol-geo/geometry/mesh/mesh-builder';
 import { addCylinder } from 'molstar/lib/mol-geo/geometry/mesh/builder/cylinder';
 import { addSphere } from 'molstar/lib/mol-geo/geometry/mesh/builder/sphere';
-import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
+import { Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { Shape, ShapeGroup } from 'molstar/lib/mol-model/shape';
 import { ShapeRepresentation } from 'molstar/lib/mol-repr/shape/representation';
 import type { Representation } from 'molstar/lib/mol-repr/representation';
@@ -13,6 +13,7 @@ import type { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { ENTITY_DEFINITIONS } from '@/simulation/entities';
 import type { EntityId } from '@/simulation/types';
 import { structureRegistry } from '@/molecules/StructureRegistry';
+import type { SimulationRendererFrame } from '@/rendering/types';
 
 interface VesselShapeData {
   readonly kind: 'vessel';
@@ -83,6 +84,7 @@ function conceptualEntityShape(_ctx: unknown, data: ConceptualShapeData) {
 
 export interface MolStarCustomShapeHandle {
   readonly representation: Representation.Any;
+  updateFrame(frame: SimulationRendererFrame): void;
   select(entityId: EntityId | null): void;
   entityFromLoci(loci: unknown): EntityId | null;
   dispose(): void;
@@ -118,6 +120,12 @@ export async function addSimulationCustomShapes(
   plugin.canvas3d?.add(conceptualRepresentation);
 
   let selectedIndex: number | null = null;
+  const transform = Mat4.identity();
+  const rotation = Mat4.identity();
+  const translation = Mat4.identity();
+  const scale = Mat4.identity();
+  const flowAxis = Vec3.create(1, 0, 0);
+  const offset = Vec3.zero();
   const getLoci = (index: number) => {
     const all = conceptualRepresentation.getAllLoci();
     const shapeLoci = all.find((item) => item.kind === 'shape-loci');
@@ -129,6 +137,25 @@ export async function addSimulationCustomShapes(
 
   return {
     representation: conceptualRepresentation,
+    updateFrame(frame) {
+      // 모델 시간에 맞춰 fallback 입자 무리가 관 안을 천천히 공전하고 호흡한다.
+      // 모션 줄이기에서는 시간 위상을 고정하되 수준 기반 강조는 유지한다.
+      const phase = frame.reducedMotion ? 0.75 : frame.time;
+      const activity = Math.min(Math.max(frame.signals.networkActivity, 0), 1);
+      const breathing = 1 + Math.sin(phase * 2.2) * (0.06 + activity * 0.06);
+
+      Mat4.fromRotation(rotation, phase * (0.55 + activity * 0.35), flowAxis);
+      Mat4.fromUniformScaling(scale, breathing);
+      Mat4.mul(transform, rotation, scale);
+      Vec3.set(offset, Math.sin(phase * 0.9) * (4 + activity * 3), 0, 0);
+      Mat4.fromTranslation(translation, offset);
+      Mat4.mul(transform, translation, transform);
+
+      conceptualRepresentation.setState({
+        transform,
+        alphaFactor: 0.72 + activity * 0.28,
+      });
+    },
     select(entityId) {
       if (selectedIndex !== null) {
         const oldLoci = getLoci(selectedIndex);
