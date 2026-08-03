@@ -20,6 +20,7 @@ next-env.d.ts
 # editors
 /.claude/
 /.idea/
+/CLAUDE.md
 /.vscode
 *.swp
 
