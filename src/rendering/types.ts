@@ -19,6 +19,8 @@ export interface SimulationRendererFrame {
   readonly time: number;
   readonly levels: EntityLevels;
   readonly signals: DerivedSignals;
+  /** 반응 id별 0–1 활동도. 렌더러가 엣지 흐름을 그리는 데 쓴다. */
+  readonly reactionActivity: Readonly<Record<string, number>>;
   readonly reducedMotion: boolean;
 }
 

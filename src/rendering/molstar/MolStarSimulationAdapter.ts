@@ -1,6 +1,7 @@
 import { loadStructureFromData } from 'molstar/lib/extensions/plugin/loaders';
 import { Loci } from 'molstar/lib/mol-model/loci';
 import { Structure } from 'molstar/lib/mol-model/structure';
+import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import type { Representation } from 'molstar/lib/mol-repr/representation';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
@@ -18,6 +19,15 @@ import type {
   SimulationRendererFrame,
 } from '@/rendering/types';
 import { addSimulationCustomShapes, type MolStarCustomShapeHandle } from './customShapes';
+import { CASCADE_NODES, cascadeNodeIndex } from './cascadeLayout';
+
+/**
+ * 6MV4가 캐스케이드 안에서 차지하는 자리. 이 노드의 개념 구체는 그리지 않으므로
+ * 실험 구조가 곧 Factor IXa 노드다.
+ */
+const STRUCTURE_SLOT = CASCADE_NODES[cascadeNodeIndex('factorIXa')].center;
+/** 실험 구조를 옮겨 심을 때 맞출 bounding sphere 반지름. */
+const STRUCTURE_TARGET_RADIUS = 9;
 
 export interface MolStarAdapterEvents {
   onLifecycle(state: 'loading-structure' | 'ready' | 'context-lost'): void;
@@ -42,8 +52,10 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
   #rotationY = Mat4.identity();
   #rotationZ = Mat4.identity();
   #toCenter = Mat4.identity();
+  #structureScale = Mat4.identity();
   #negativeCenter = Vec3.zero();
   #animatedCenter = Vec3.zero();
+  #structureScaleFactor = 1;
   #yAxis = Vec3.create(0, 1, 0);
   #zAxis = Vec3.create(0, 0, 1);
   #lastFrameTime: number | null = null;
@@ -140,6 +152,11 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
     const structure = structureRef?.cell.obj?.data;
     if (structure) {
       Vec3.copy(this.#structureCenter, structure.boundary.sphere.center);
+      // mmCIF 원본 좌표는 관 기준으로 크고 축에서 멀리 떨어져 있다. 캐스케이드 자리에
+      // 맞도록 자기 중심 기준으로 줄인 뒤 옮겨 심는다.
+      const radius = structure.boundary.sphere.radius;
+      this.#structureScaleFactor =
+        radius > 0 ? STRUCTURE_TARGET_RADIUS / radius : 1;
       this.#structureRepresentations = structureRef.components.flatMap((component) =>
         component.representations.flatMap((representation) => {
           const repr = representation.cell.obj?.data.repr;
@@ -185,23 +202,26 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
       this.#lastFrameReducedMotion = frame.reducedMotion;
       const center = this.#structureCenter;
 
-      // 구조 중심을 축으로 회전시켜 좌표 원점에서 멀리 있는 6MV4가 궤도를 그리며
-      // 화면 밖으로 밀려나지 않게 한다. 네트워크 활동이 높을수록 움직임도 조금 커진다.
+      // 구조를 자기 중심으로 끌어와 줄이고 돌린 뒤 캐스케이드의 Factor IXa 자리로
+      // 옮긴다. 이렇게 해야 실험 구조가 관 밖에 떠 있지 않고 연쇄의 한 노드로 읽힌다.
+      // 네트워크 활동이 높을수록 자전과 흔들림이 조금 커진다.
       Vec3.negate(this.#negativeCenter, center);
       Mat4.fromTranslation(this.#toOrigin, this.#negativeCenter);
+      Mat4.fromUniformScaling(this.#structureScale, this.#structureScaleFactor);
+      Mat4.mul(this.#structureTransform, this.#structureScale, this.#toOrigin);
       Mat4.fromRotation(
         this.#rotationY,
         phase * (0.42 + activity * 0.22),
         this.#yAxis,
       );
-      Mat4.mul(this.#structureTransform, this.#rotationY, this.#toOrigin);
+      Mat4.mul(this.#structureTransform, this.#rotationY, this.#structureTransform);
       Mat4.fromRotation(this.#rotationZ, Math.sin(phase * 0.7) * 0.2, this.#zAxis);
       Mat4.mul(this.#structureTransform, this.#rotationZ, this.#structureTransform);
       Vec3.set(
         this.#animatedCenter,
-        center[0],
-        center[1] + Math.sin(phase * 1.05) * (1.2 + activity),
-        center[2],
+        STRUCTURE_SLOT[0],
+        STRUCTURE_SLOT[1] + Math.sin(phase * 1.05) * (1.2 + activity),
+        STRUCTURE_SLOT[2],
       );
       Mat4.fromTranslation(this.#toCenter, this.#animatedCenter);
       Mat4.mul(this.#structureTransform, this.#toCenter, this.#structureTransform);
@@ -210,7 +230,12 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
         representation.setState({ transform: this.#structureTransform });
         plugin.canvas3d?.update(representation, true);
       }
-      this.#shapeHandle?.updateFrame(frame);
+    }
+
+    // 수준과 반응 활동도는 시간과 무관하게 바뀔 수 있으므로 도형 갱신은 위 gate와
+    // 별개로 매 프레임 시도하고, 실제로 바뀌었을 때만 draw를 요청한다.
+    const shapeChanged = this.#shapeHandle?.updateFrame(frame) ?? false;
+    if (stateChanged || shapeChanged) {
       if (this.#shapeHandle) {
         plugin.canvas3d?.update(this.#shapeHandle.representation, true);
       }
@@ -239,7 +264,12 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
     if (!structure) return;
     const loci = Structure.Loci(structure);
     plugin.managers.interactivity.lociSelects.selectOnly({ loci });
-    plugin.managers.camera.focusLoci(loci, { durationMs: 180, extraRadius: 5 });
+    // loci의 경계는 변환 이전의 원본 mmCIF 좌표라서 화면에 그려지는 자리와 다르다.
+    // 캐스케이드 자리를 직접 겨냥해야 카메라가 빈 공간을 잡지 않는다.
+    plugin.managers.camera.focusSphere(
+      Sphere3D.create(Vec3.clone(STRUCTURE_SLOT), STRUCTURE_TARGET_RADIUS),
+      { durationMs: 180, extraRadius: 5 },
+    );
   }
 
   resetCamera(): void {

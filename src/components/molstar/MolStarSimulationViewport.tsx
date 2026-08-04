@@ -149,6 +149,7 @@ export function MolStarSimulationViewport() {
         time: visualTime,
         levels: snapshot?.levels ?? liveState.levels,
         signals: snapshot?.signals ?? liveState.signals,
+        reactionActivity: snapshot?.reactionActivity ?? liveState.reactionActivity,
         reducedMotion: storeState.reducedMotion,
       });
     };
