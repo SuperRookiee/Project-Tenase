@@ -2,7 +2,7 @@
   "name": "project-tenase",
   "version": "0.1.0",
   "private": true,
-  "description": "Project Tenase — 응고 구조에서 착안한 추상 반응 네트워크를 다루는 가상의 비임상 교육용 시각화.",
+  "description": "Project Tenase — 응고 구조에서 착안한 추상 반응망을 다루는 가상의 비임상 교육용 시각화.",
   "type": "module",
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
