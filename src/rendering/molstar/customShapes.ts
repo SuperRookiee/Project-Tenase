@@ -206,7 +206,7 @@ export interface MolStarCustomShapeHandle {
  * 양자화한 상태 지문.
  *
  * 형상을 다시 만드는 비용이 공짜는 아니므로, 눈에 보이지 않을 만큼 작은 변화로는
- * 다시 만들지 않는다. 네트워크가 잠잠하면 지문이 고정되어 재생성이 아예 멎는다.
+ * 다시 만들지 않는다. 반응망이 잠잠하면 지문이 고정되어 재생성이 아예 멎는다.
  */
 function computeSignature(
   levels: EntityLevels,
@@ -298,7 +298,7 @@ export async function addSimulationCustomShapes(
       }
 
       // 이동 표식은 프레임 사이 모델 시간 차이만큼 나아간다. 활동이 없으면 서지도
-      // 않고 아예 멈춘다 — 덕분에 잠잠한 네트워크에서는 형상 재생성이 일어나지 않는다.
+      // 않고 아예 멈춘다 — 덕분에 잠잠한 반응망에서는 형상 재생성이 일어나지 않는다.
       const delta = Number.isNaN(lastTime) ? 0 : frame.time - lastTime;
       lastTime = frame.time;
       if (delta > 0 && !frame.reducedMotion) {

@@ -1,5 +1,5 @@
 /**
- * 추상 네트워크 엔진.
+ * 추상 반응망 엔진.
  *
  * `reactions.ts`의 반응 그래프 위에서 동작하는 결정론적 고정 스텝 적분기다.
  * 무작위성이 전혀 없고, I/O를 수행하지 않으며, 브라우저 API를 건드리지 않고,
@@ -251,6 +251,11 @@ class Engine implements SimulationEngine {
     };
   }
 
+  applyInput(id: EntityId, amount: number): void {
+    const validated = assertNormalized(amount, `externalInput.${id}`);
+    this.levels[id] = clamp01(this.levels[id] + validated);
+  }
+
   /** 반응의 모든 참여 노드가 켜져 있을 때 참이다. */
   private isReactionEnabled(reactionId: string): boolean {
     const participants = REACTION_PARTICIPANTS.get(reactionId);
@@ -427,7 +432,7 @@ class Engine implements SimulationEngine {
    * 이 비율의 범위를 한 노드 자신의 엣지로 한정한 덕분에 값이 얌전하게 움직인다.
    * 절대 억제 유량은 억제 노드 설정에 대해 단조롭지 *않다*. 첫 번째 억제 노드를
    * 높이면 하류 엣지들이 심하게 굶주려 중앙 출력 풀이 무너지고, 그 결과 두 번째
-   * 억제 엣지를 지나는 유량이 오히려 줄어든다. 게다가 네트워크 전체를 기준으로
+   * 억제 엣지를 지나는 유량이 오히려 줄어든다. 게다가 반응망 전체를 기준으로
    * 삼은 비율은 무관한 엣지가 수준 상한에 포화될 때마다 추가로 튀어 오른다.
    * 여기서는 분자와 분모가 같은 풀에 비례해 함께 커지므로, 결과값은 두 억제 노드
    * 중 어느 쪽을 올려도 상승하고 그래프의 나머지 부분이 무엇을 하든 무시한다.

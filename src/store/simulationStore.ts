@@ -41,7 +41,20 @@ import type {
 export const PUBLISH_INTERVAL_SECONDS = 1 / 12;
 
 export type CameraStoryTarget = EntityId | 'full' | null;
-export type WorkspaceId = 'simulation' | 'reactions' | 'molecules' | 'knowledge';
+export type WorkspaceId =
+  | 'simulation'
+  | 'scenarios'
+  | 'reactions'
+  | 'molecules'
+  | 'knowledge';
+
+const WORKSPACE_IDS: readonly WorkspaceId[] = [
+  'simulation',
+  'scenarios',
+  'reactions',
+  'molecules',
+  'knowledge',
+];
 
 export interface PublishedFrame {
   readonly tick: number;
@@ -226,9 +239,7 @@ export const simulationStore = createStore<SimulationStoreState>()((set, get) =>
   },
 
   setWorkspace(workspace) {
-    if (!['simulation', 'reactions', 'molecules', 'knowledge'].includes(workspace)) {
-      return;
-    }
+    if (!WORKSPACE_IDS.includes(workspace)) return;
     set({ workspace });
   },
 

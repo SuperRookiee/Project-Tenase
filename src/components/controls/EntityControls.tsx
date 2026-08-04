@@ -27,7 +27,7 @@ const KIND_GROUPS: ReadonlyArray<{ readonly kind: EntityKind; readonly legend: s
  * 아무 효과가 없으므로 안내 문구와 함께 비활성 상태로 그려진다.
  */
 const PRODUCED_NOTE =
-  '직접 설정하는 값이 아니라 네트워크가 만들어 내는 값이므로, 이 공급 컨트롤은 동작하지 않는다.';
+  '직접 설정하는 값이 아니라 반응망이 만들어 내는 값이므로, 이 공급 컨트롤은 동작하지 않는다.';
 const SUPPLY_NOTE = '이 노드가 근처를 유지하는 정규화 공급 목표, 0에서 1 사이.';
 
 function EntityRow({ definition }: { readonly definition: EntityDefinition }) {
@@ -62,7 +62,7 @@ function EntityRow({ definition }: { readonly definition: EntityDefinition }) {
             className="size-3.5 shrink-0 cursor-pointer accent-accent"
           />
           <label htmlFor={toggleId} className="cursor-pointer text-[0.7rem] text-ink-1">
-            {label} 노드를 네트워크에 포함
+            {label} 노드를 반응망에 포함
           </label>
         </span>
         <button

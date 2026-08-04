@@ -12,7 +12,7 @@
  * 추상적인 "모델 시간 단위"로 표현된다.
  */
 
-/** 네트워크에 존재하는 모든 추상 엔티티의 식별자. */
+/** 반응망에 존재하는 모든 추상 엔티티의 식별자. */
 export type EntityId =
   | 'factorIX'
   | 'factorIXa'
@@ -76,7 +76,7 @@ export interface EntityDefinition {
   readonly clearance: number;
   /** 공급 목표를 향한 이완 속도. 무차원, 0–1. */
   readonly replenishment: number;
-  /** 균형 잡힌 네트워크 프리셋이 사용하는 기본 정규화 공급값. */
+  /** 균형 잡힌 반응망 프리셋이 사용하는 기본 정규화 공급값. */
   readonly defaultSupply: number;
   /** 3D 레이어와 차트에서 쓰는 hex 색상. */
   readonly color: string;
@@ -157,7 +157,7 @@ export interface SimulationConfig {
  * 범위의 무차원 값이다.
  */
 export interface DerivedSignals {
-  /** 네트워크 전반의 추상 활동을 합산한 값. */
+  /** 반응망 전반의 추상 활동을 합산한 값. */
   readonly networkActivity: number;
   /** 활성화·결합·전환 유량의 크기를 평활화한 값. */
   readonly activationIntensity: number;
@@ -174,7 +174,7 @@ export interface DerivedSignals {
   readonly thrombinModelSignal: number;
   readonly fibrinModelSignal: number;
   /**
-   * 억제 노드가 현재 걷어내고 있는 네트워크 잠재 처리량의 비율. 직접 제거되는
+   * 억제 노드가 현재 걷어내고 있는 반응망 잠재 처리량의 비율. 직접 제거되는
    * 유량과 다른 엣지에서 억눌린 유량을 함께 센다. 두 억제 노드 중 어느 쪽을
    * 올려도 이 값이 상승한다.
    */
@@ -240,6 +240,17 @@ export interface SimulationEngine {
   configure(patch: Partial<SimulationConfig>): void;
   setSupply(id: EntityId, value: number): void;
   setEnabled(id: EntityId, enabled: boolean): void;
+  /**
+   * 그래프 바깥에서 한 노드의 현재 수준에 증분을 더한다.
+   *
+   * 공급 설정값을 바꾸는 `setSupply`와 달리 지금 이 순간의 수준만 밀어 올린다.
+   * 그 뒤로는 그 노드의 평소 거동이 그대로 이어진다 — 저장형은 공급값 쪽으로
+   * 되돌아가고 일시형은 자기 소실률로 감쇠한다. 결과는 0–1 안에 갇힌다.
+   *
+   * 추상 그래프의 한 노드를 밀어 보는 조작일 뿐이며, 어떤 절차나 제품에도
+   * 대응하지 않는다.
+   */
+  applyInput(id: EntityId, amount: number): void;
   /** 추상 모델 시간을 정확히 한 고정 스텝만큼 진행한다. */
   step(): void;
   /**

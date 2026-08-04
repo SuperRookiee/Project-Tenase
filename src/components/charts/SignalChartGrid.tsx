@@ -38,7 +38,7 @@ const SERIES: readonly ChartSeries[] = [
   {
     title: 'Factor Xa 모델 신호',
     description:
-      '네트워크 중간부의 활성형 노드에 대한 0에서 1 사이의 무차원 모델 신호.',
+      '반응망 중간부의 활성형 노드에 대한 0에서 1 사이의 무차원 모델 신호.',
     dataKey: 'factorXa',
     color: getEntity('factorXa').color,
     glyph: getEntity('factorXa').glyph,

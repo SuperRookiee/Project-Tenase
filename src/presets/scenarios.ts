@@ -33,7 +33,7 @@ export interface ScenarioPreset {
 export const SCENARIO_PRESETS: readonly ScenarioPreset[] = [
   {
     id: 'balanced-network',
-    name: '균형 잡힌 네트워크',
+    name: '균형 잡힌 반응망',
     description:
       '모든 노드가 기본 공급값에 놓이고 손상 신호는 척도 중간에 있다.',
     focus:
@@ -62,7 +62,7 @@ export const SCENARIO_PRESETS: readonly ScenarioPreset[] = [
     id: 'increased-tfpi-inhibition',
     name: 'TFPI 억제 증가',
     description:
-      '첫 번째 억제 노드가 높게 시작해, 네트워크 중간부의 활성형 노드를 만들어 내는 엣지를 약화시킨다.',
+      '첫 번째 억제 노드가 높게 시작해, 반응망 중간부의 활성형 노드를 만들어 내는 엣지를 약화시킨다.',
     focus:
       'Factor Xa 모델 신호가 눌려 있는 동안 억제 모델 신호가 올라가는 모습을 관찰한다.',
     supplyOverrides: { tfpi: 0.85 },

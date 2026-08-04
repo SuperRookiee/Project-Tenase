@@ -197,7 +197,7 @@ below it:
 
 | Region | Element | Content |
 |---|---|---|
-| Left | `<aside aria-label="네트워크 파라미터">` | `ControlPanel` |
+| Left | `<aside aria-label="반응망 파라미터">` | `ControlPanel` |
 | Center | `<main id="main-region">` | `SceneCanvas`, `KpiStrip`, `TransportBar`, `TimelineScrubber`, `SceneTextMirror`, `KeyboardHelp`, `SignalChartGrid` |
 | Right | `<aside aria-label="선택한 노드 인스펙터">` | `InspectorPanel` |
 

@@ -3,9 +3,9 @@ import './globals.css';
 import 'molstar/build/viewer/molstar.css';
 
 export const metadata: Metadata = {
-  title: 'Project Tenase — 추상 네트워크 시각화',
+  title: 'Project Tenase — 추상 반응망 시각화',
   description:
-    '추상 반응 네트워크를 다루는 가상의 비임상 교육용 시각화. 의료 도구가 아니며 검증된 생물학 모델도 아니다.',
+    '추상 반응망을 다루는 가상의 비임상 교육용 시각화. 의료 도구가 아니며 검증된 생물학 모델도 아니다.',
   robots: { index: false, follow: false },
 };
 

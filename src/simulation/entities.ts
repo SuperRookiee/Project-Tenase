@@ -86,7 +86,7 @@ export const ENTITY_DEFINITIONS: readonly EntityDefinition[] = [
     label: 'Factor X',
     shortCode: 'X',
     glyph: '■',
-    role: '네트워크 중간부의 전구 노드. 복합체에 의해 활성형으로 전환된다.',
+    role: '반응망 중간부의 전구 노드. 복합체에 의해 활성형으로 전환된다.',
     kind: 'precursor',
     behavior: 'reservoir',
     clearance: 0.0,
@@ -102,7 +102,7 @@ export const ENTITY_DEFINITIONS: readonly EntityDefinition[] = [
     label: 'Factor Xa',
     shortCode: 'Xa',
     glyph: '◼',
-    role: '네트워크 중간부의 활성형 노드. 하류 전환 엣지를 구동하며, 첫 번째 억제 엣지의 대상이다.',
+    role: '반응망 중간부의 활성형 노드. 하류 전환 엣지를 구동하며, 첫 번째 억제 엣지의 대상이다.',
     kind: 'activated',
     behavior: 'transient',
     clearance: 0.2,
@@ -150,7 +150,7 @@ export const ENTITY_DEFINITIONS: readonly EntityDefinition[] = [
     label: 'Fibrinogen',
     shortCode: 'FGN',
     glyph: '▬',
-    role: '구조 전구 노드. 네트워크가 메시를 조립하면서 소모된다.',
+    role: '구조 전구 노드. 반응망이 메시를 조립하면서 소모된다.',
     kind: 'precursor',
     behavior: 'reservoir',
     clearance: 0.0,
@@ -182,7 +182,7 @@ export const ENTITY_DEFINITIONS: readonly EntityDefinition[] = [
     label: 'TFPI',
     shortCode: 'TFPI',
     glyph: '▽',
-    role: '억제 노드. 네트워크 중간부의 활성형 노드를 만들어 내는 엣지를 약화시키고, 그 노드를 직접 제거하기도 한다.',
+    role: '억제 노드. 반응망 중간부의 활성형 노드를 만들어 내는 엣지를 약화시키고, 그 노드를 직접 제거하기도 한다.',
     kind: 'inhibitor',
     behavior: 'reservoir',
     clearance: 0.0,
@@ -285,7 +285,7 @@ export function createDefaultFlags(enabled = true): EntityFlags {
 
 /**
  * 시작 수준. 저장형 노드는 공급값에서 시작하고, 일시형과 종단형 노드는 0에서
- * 시작하므로 모든 실행은 조용한 네트워크에서 출발한다.
+ * 시작하므로 모든 실행은 조용한 반응망에서 출발한다.
  */
 export function createInitialLevels(supply: EntityLevels): EntityLevels {
   const levels = {} as EntityLevels;

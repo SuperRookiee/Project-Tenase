@@ -227,7 +227,7 @@ export function SceneCanvas() {
         {webglAvailable === true && contextLost ? (
           <div className="absolute inset-0 flex items-center justify-center bg-surface-0/85 p-6">
             <p className="max-w-prose text-center text-sm text-caution">
-              브라우저가 3D 렌더링 컨텍스트를 놓아주었다. 네트워크 모델은 계속
+              브라우저가 3D 렌더링 컨텍스트를 놓아주었다. 반응망 모델은 계속
               돌아가고 모든 판독값도 실시간으로 유지된다. 컨텍스트가 돌아오는 즉시
               스테이지는 스스로 다시 그려진다.
             </p>

@@ -200,7 +200,7 @@ describe('반응이 예상한 추상 신호를 갱신한다', () => {
 });
 
 describe('손상 게이팅', () => {
-  it('손상 신호가 0인 동안에는 네트워크 전체를 조용히 둔다', () => {
+  it('손상 신호가 0인 동안에는 반응망 전체를 조용히 둔다', () => {
     const engine = createEngine({
       ...createDefaultConfig(),
       vesselDamageSignal: 0,
@@ -231,7 +231,7 @@ describe('손상 게이팅', () => {
     }
   });
 
-  it('손상 신호가 열리는 즉시 네트워크를 시작한다', () => {
+  it('손상 신호가 열리는 즉시 반응망을 시작한다', () => {
     const engine = createEngine({
       ...createDefaultConfig(),
       vesselDamageSignal: 0,
@@ -247,7 +247,7 @@ describe('손상 게이팅', () => {
 });
 
 describe('엔티티를 끄면 그 엣지도 사라진다', () => {
-  it('복합체를 0으로 떨어뜨리고 네트워크 중간 신호를 낮게 붙들어 둔다', () => {
+  it('복합체를 0으로 떨어뜨리고 반응망 중간 신호를 낮게 붙들어 둔다', () => {
     const baseline = createEngine(createDefaultConfig());
 
     const disabledFlags: EntityFlags = {

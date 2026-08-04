@@ -158,7 +158,7 @@ export function InspectorPanel() {
   }, [selectedEntityId]);
 
   const status = !enabled
-    ? '네트워크에서 꺼짐'
+    ? '반응망에서 꺼짐'
     : level >= 0.05
       ? '활동 신호 있음'
       : '현재 활동 낮음';

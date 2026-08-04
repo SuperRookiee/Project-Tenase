@@ -87,7 +87,7 @@ export const REACTION_DEFINITIONS: readonly ReactionDefinition[] = [
     ],
     requiresDamageSignal: false,
     description:
-      '네트워크 중간부의 활성형 노드가 중심 출력 노드의 생성을 구동하는 전환 엣지.',
+      '반응망 중간부의 활성형 노드가 중심 출력 노드의 생성을 구동하는 전환 엣지.',
   },
   {
     id: 'r5-conversion',
@@ -111,7 +111,7 @@ export const REACTION_DEFINITIONS: readonly ReactionDefinition[] = [
     modulators: [{ entityId: 'tfpi', mode: 'catalyst', weight: 1, floor: 0 }],
     requiresDamageSignal: false,
     description:
-      '억제 엣지. 첫 번째 억제 노드에 비례해 네트워크 중간부의 활성형 노드를 제거한다.',
+      '억제 엣지. 첫 번째 억제 노드에 비례해 반응망 중간부의 활성형 노드를 제거한다.',
   },
   {
     id: 'i2-inhibition',

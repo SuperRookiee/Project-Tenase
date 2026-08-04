@@ -14,8 +14,8 @@ interface Shortcut {
 
 const SHORTCUTS: readonly Shortcut[] = [
   { keys: 'Space', action: '실행을 재생하거나 일시정지' },
-  { keys: 'R', action: '선택한 시나리오 프리셋으로 네트워크 초기화' },
-  { keys: 'S', action: '네트워크를 한 구간만큼 진행' },
+  { keys: 'R', action: '선택한 시나리오 프리셋으로 반응망 초기화' },
+  { keys: 'S', action: '반응망을 한 구간만큼 진행' },
   { keys: '←', action: '타임라인 커서를 한 샘플 이전으로 이동' },
   { keys: '→', action: '타임라인 커서를 한 샘플 이후로 이동' },
   { keys: 'Home', action: '가장 오래된 기록 샘플로 이동' },

@@ -74,7 +74,7 @@ describe('입자 용량 표', () => {
 });
 
 describe('allocateParticles', () => {
-  it('네트워크가 완전히 포화돼도 상한 안에 머문다', () => {
+  it('반응망이 완전히 포화돼도 상한 안에 머문다', () => {
     const levels = createLevels(1);
     const allocation = allocateParticles(levels, 1);
 

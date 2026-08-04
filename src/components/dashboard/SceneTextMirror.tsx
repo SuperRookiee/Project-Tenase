@@ -85,7 +85,7 @@ function describeScene(state: SimulationStoreState): SceneDescription {
   lines.push(
     `추상 손상 신호는 ${formatNormalized(
       damage,
-    )}, ${formatPercentOfScale(damage)}로 설정돼 있다. 이 값이 네트워크의 개시 엣지를 연다.`,
+    )}, ${formatPercentOfScale(damage)}로 설정돼 있다. 이 값이 반응망의 개시 엣지를 연다.`,
   );
 
   const present: string[] = [];
@@ -145,7 +145,7 @@ function describeScene(state: SimulationStoreState): SceneDescription {
 
   lines.push(describeMesh(displayed.signals.fibrinModelSignal));
   lines.push(
-    `종합 네트워크 활동도는 ${formatNormalized(
+    `종합 반응망 활동도는 ${formatNormalized(
       displayed.signals.networkActivity,
     )}, 활성화 강도는 ${formatNormalized(
       displayed.signals.activationIntensity,
@@ -167,7 +167,7 @@ export function SceneTextMirror({ showDetails = true }: { readonly showDetails?:
 
     const handle = window.setInterval(() => {
       const next = describeScene(simulationStore.getState());
-      // 문구가 실제로 달라졌을 때만 반영한다. 그래야 조용한 네트워크가 같은 문장을
+      // 문구가 실제로 달라졌을 때만 반영한다. 그래야 조용한 반응망이 같은 문장을
       // 몇 번이고 다시 안내하지 않는다.
       setDescription((previous) => (previous.text === next.text ? previous : next));
     }, ANNOUNCE_INTERVAL_MS);

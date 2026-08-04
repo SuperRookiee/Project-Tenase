@@ -1,6 +1,6 @@
 # Project Tenase
 
-응고 캐스케이드의 모양만 빌려온 가상의 반응 네트워크를 Mol* 위에서 굴려 보는 개인
+응고 캐스케이드의 모양만 빌려온 가상의 반응망을 Mol* 위에서 굴려 보는 개인
 프로젝트다. Factor IX, Thrombin 같은 이름은 방향 그래프의 노드에 붙인 라벨일 뿐이고,
 모든 값은 0~1 무차원이며 반응 속도 상수는 화면에서 애니메이션이 잘 읽히도록 손으로
 고른 숫자다.
@@ -27,7 +27,7 @@ Mol*이고, 예전 React Three Fiber 장면은 `NEXT_PUBLIC_SIMULATION_RENDERER=
   Antithrombin                  -|  활성 Thrombin
 ```
 
-출력은 네트워크 활동도, 활성화 강도, 억제 강도, Thrombin 모델 신호, Fibrin 모델 신호,
+출력은 반응망 활동도, 활성화 강도, 억제 강도, Thrombin 모델 신호, Fibrin 모델 신호,
 반응 이벤트 수다. 사용자가 직접 만지는 값은 노드별 공급량, 전역 개시 신호, 속도 배수,
 입자 밀도 네 가지고 나머지는 전부 여기서 파생된다.
 
@@ -35,12 +35,19 @@ Mol*이고, 예전 React Three Fiber 장면은 `NEXT_PUBLIC_SIMULATION_RENDERER=
 
 상단 바에 워크스페이스 전환, 재생/일시정지, 모델 시간, 선택 엔티티가 모여 있다.
 `⌘K`(윈도우는 `Ctrl+K`)로 명령 팔레트를 열면 워크스페이스·분자·반응을 한 번에 검색해
-바로 이동할 수 있다. Simulation 외 세 워크스페이스는 `next/dynamic`으로 나눠 받는다.
+바로 이동할 수 있다. Simulation 외 네 워크스페이스는 `next/dynamic`으로 나눠 받는다.
 
 **시뮬레이션** — KPI 다섯 장 아래에 Mol* Canvas3D viewport가 크게 놓이고, 데스크톱에서는
 오른쪽에 선택 level과 구조 provenance 패널이 붙는다. 모델 파라미터 슬라이더는 상시
 노출 대신 `모델 설정` drawer 안에 있다. viewport 아래로 playback control과 snapshot
 timeline, 그리고 키보드로 접근 가능한 DOM mirror가 이어진다.
+
+**시나리오 비교** — 실시간 엔진을 구독하지 않고 `scenarioSweep.ts`가 그때그때 새 엔진을
+만들어 끝까지 돌린 결과를 비교한다. 개시 노드 공급값, 손상 신호, 관찰 창 길이를 잡아 두고
+기준 실행 / 현재 공급값 / 외부 입력을 준 실행 셋을 나란히 그린다. 외부 입력은 한 노드의
+수준을 그래프 바깥에서 밀어 올리는 조작이며(`engine.applyInput`), 일회와 지속 두 방식이
+있다. 아래쪽 두 차트는 공급값과 입력 세기를 각각 0에서 1까지 쓸어보며 기준 대비 도달
+비율을 그린다. 쓸어보기 한 번이 실행 스물두 번이라 설정이 잠잠해진 뒤에 따라잡는다.
 
 **반응 탐색기** — 엔진 이벤트와 snapshot을 `buildAnalysisEvents`가 활성화 / 결합 /
 복합체 형성 / 해리 / 억제 / 감쇠 / 반응 일곱 종류로 재해석해 타임라인으로 보여 준다.
@@ -146,7 +153,7 @@ npm run dev
 `http://localhost:3000`을 열면 된다.
 
 `npm run verify`가 린트 → 타입 검사 → 테스트 → 프로덕션 빌드를 차례로 돌린다. 현재
-13개 파일 222개 테스트가 통과한다. 개별 단계는 `npm run lint`, `npm run typecheck`,
+14개 파일 239개 테스트가 통과한다. 개별 단계는 `npm run lint`, `npm run typecheck`,
 `npm test`, `npm run build`.
 
 ## 코드 구조
@@ -156,7 +163,7 @@ src/
   app/                     Next.js 앱 라우터 셸, 테마 토큰
   analysis/                엔진 이벤트를 분석용 이벤트로 재해석
   components/
-    workspaces/            네 개의 작업공간, 명령 팔레트, 상단 내비게이션
+    workspaces/            다섯 개의 작업공간, 명령 팔레트, 상단 내비게이션
     molstar/               Mol* viewport lifecycle UI
     controls/              슬라이더, 토글, 시나리오 선택
     dashboard/             셸, 실행 제어, 타임라인, 인스펙터, 접근성 미러
@@ -205,7 +212,7 @@ same-origin `/structures/6mv4.cif`만 읽고 외부 구조를 런타임에 받�
 `aria-hidden`이고, 장면에서 할 수 있는 일은 전부 키보드로 조작 가능한 DOM 컨트롤로도
 할 수 있다. 의미가 색에만 의존하는 곳은 없어서 모든 엔티티가 색과 나란히 기호와 축약
 코드를 갖는다. 모션 줄이기는 앱 안에서 켤 수 있고 운영체제 설정도 따라간다. WebGL을 못
-쓰는 환경에서는 DOM만으로 네트워크 상태를 전부 그리는 대체 화면이 나온다.
+쓰는 환경에서는 DOM만으로 반응망 상태를 전부 그리는 대체 화면이 나온다.
 
 ## 성능
 
@@ -218,3 +225,15 @@ legacy 장면 쪽은 화면에 보이는 입자 인스턴스를 400개로 묶어
 DPR은 1.75까지만 올린다. Brownian 위치 보간, platelet 돌기, vessel current, Fibrin branch는
 전부 고정 용량 typed array와 instanced mesh를 재사용해서 렌더 루프 안에서 프레임마다
 할당하지 않는다. WebGL 컨텍스트 손실과 복구도 처리한다.
+
+## 아쉬운 점
+
+- 적분은 수치적으로 정교한 방식이 아니라 읽기 쉬운 명시적 고정 스텝 갱신이다.
+- 그래프가 아주 작고 되먹임 엣지가 없다.
+- 3D 위치, vessel, damage patch, 입자 형태는 공간적 은유일 뿐이다.
+- Molecule Explorer의 구조 뷰포트가 아직 비어 있다.
+- Mol* 쪽에는 반응 event animation이 없어서, 그 표현은 legacy 장면에만 남아 있다.
+- WebGL canvas 안의 텍스트는 접근성 트리에 안 들어가서, 별도 DOM mirror가 약 2초 간격으로
+  같은 snapshot을 다시 설명한다.
+- 모션 줄이기에서는 Brownian motion과 카메라 스토리를 끄고 pulse·glow를 정적인 단서로
+  바꾼다. 선택, replay, Inspector, 모델 제어는 그대로다.

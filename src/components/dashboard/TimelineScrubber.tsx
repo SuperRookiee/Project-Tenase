@@ -26,7 +26,7 @@ export function TimelineScrubber() {
 
   const positionText = hasHistory
     ? `샘플 ${length}개 중 ${activeIndex + 1}번째${
-        isLive ? ', 가장 최근 기록 샘플, 실시간 네트워크를 따라가는 중' : ''
+        isLive ? ', 가장 최근 기록 샘플, 실시간 반응망을 따라가는 중' : ''
       }${
         selected
           ? `, 틱 ${selected.tick}, ${selected.time.toFixed(2)} 모델 시간 단위`
@@ -98,7 +98,7 @@ export function TimelineScrubber() {
           </>
         ) : (
           <span className="text-ink-2">
-            아직 기록된 샘플이 없다. 네트워크를 잠시 실행해 보라.
+            아직 기록된 샘플이 없다. 반응망을 잠시 실행해 보라.
           </span>
         )}
       </p>

@@ -108,7 +108,7 @@ describe('Timeline과 핵심 조작', () => {
     render(<TransportBar />);
     expect(screen.getByRole('button', { name: '재생' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '한 interval 진행' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '네트워크 초기화' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '반응망 초기화' })).toBeInTheDocument();
   });
 
   it('모션 줄이기 설정은 표시 설정과 store에서 같은 값으로 유지된다', () => {

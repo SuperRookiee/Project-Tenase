@@ -32,7 +32,7 @@ export function GlobalParameterControls() {
             label="관 손상 신호"
             value={vesselDamageSignal}
             onChange={setVesselDamageSignal}
-            description="모델 관의 손상 영역에 대한 추상 개시 입력이다. 0이면 개시 엣지가 닫힌 채로 있고 네트워크는 조용히 머문다."
+            description="모델 관의 손상 영역에 대한 추상 개시 입력이다. 0이면 개시 엣지가 닫힌 채로 있고 반응망은 조용히 머문다."
           />
 
           <NormalizedSlider

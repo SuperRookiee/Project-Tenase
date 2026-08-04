@@ -62,7 +62,7 @@ interface StrandLayout {
 function buildStrandLayout(): StrandLayout {
   const random = createSeededRandom(SEED);
 
-  // 첫 노드는 구조 생성 지점에 고정해 네트워크가 한 중심에서 바깥으로 자라게 한다.
+  // 첫 노드는 구조 생성 지점에 고정해 반응망이 한 중심에서 바깥으로 자라게 한다.
   const nodes: StrandNode[] = [[...FIBRIN_CENTER]];
   for (let index = 1; index < NODE_COUNT; index += 1) {
     const angle = (random() * 2 - 1) * ANGLE_SPREAD;

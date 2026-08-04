@@ -62,7 +62,7 @@ export function WebglFallback() {
         </h2>
         <p className="max-w-prose text-sm text-ink-1">
           이 브라우저에서 WebGL 컨텍스트를 시작하지 못해 3D 스테이지가 그려지지
-          않는다. 추상 네트워크 모델은 계속 돌아가고 아래의 모든 판독값도 실시간으로
+          않는다. 추상 반응망 모델은 계속 돌아가고 아래의 모든 판독값도 실시간으로
           유지되며, 모든 컨트롤이 그대로 동작한다.
         </p>
         <p className="max-w-prose text-xs text-ink-2">

@@ -77,7 +77,7 @@ export function TransportBar() {
             onClick={reset}
             className={`${BUTTON_BASE} border-caution/60 bg-caution/10 text-caution hover:bg-caution/20`}
           >
-            네트워크 초기화
+            반응망 초기화
           </button>
         </div>
 

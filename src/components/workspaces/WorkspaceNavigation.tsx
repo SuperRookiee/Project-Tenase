@@ -4,6 +4,7 @@ import { useSimulationStore, type WorkspaceId } from '@/store/simulationStore';
 
 export const WORKSPACES: readonly { id: WorkspaceId; label: string; shortLabel: string }[] = [
   { id: 'simulation', label: '시뮬레이션', shortLabel: '관찰' },
+  { id: 'scenarios', label: '시나리오 비교', shortLabel: '회복 곡선' },
   { id: 'reactions', label: '반응 탐색기', shortLabel: '분석' },
   { id: 'molecules', label: '분자 탐색기', shortLabel: '구조' },
   { id: 'knowledge', label: '지식 자료', shortLabel: '참고' },

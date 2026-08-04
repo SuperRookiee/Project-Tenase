@@ -204,7 +204,7 @@ export class MolStarSimulationAdapter implements SimulationRendererAdapter {
 
       // 구조를 자기 중심으로 끌어와 줄이고 돌린 뒤 캐스케이드의 Factor IXa 자리로
       // 옮긴다. 이렇게 해야 실험 구조가 관 밖에 떠 있지 않고 연쇄의 한 노드로 읽힌다.
-      // 네트워크 활동이 높을수록 자전과 흔들림이 조금 커진다.
+      // 반응망 활동이 높을수록 자전과 흔들림이 조금 커진다.
       Vec3.negate(this.#negativeCenter, center);
       Mat4.fromTranslation(this.#toOrigin, this.#negativeCenter);
       Mat4.fromUniformScaling(this.#structureScale, this.#structureScaleFactor);
