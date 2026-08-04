@@ -133,7 +133,7 @@ snapshot을 복원한다. 상태는 `Live`, `일시정지`, `기록 snapshot 재
 
 ## 실행
 
-Node.js 22 기준으로 개발했다.
+Node.js 24 기준으로 개발했다.
 
 ```bash
 npm install
@@ -218,15 +218,3 @@ legacy 장면 쪽은 화면에 보이는 입자 인스턴스를 400개로 묶어
 DPR은 1.75까지만 올린다. Brownian 위치 보간, platelet 돌기, vessel current, Fibrin branch는
 전부 고정 용량 typed array와 instanced mesh를 재사용해서 렌더 루프 안에서 프레임마다
 할당하지 않는다. WebGL 컨텍스트 손실과 복구도 처리한다.
-
-## 아쉬운 점
-
-- 적분은 수치적으로 정교한 방식이 아니라 읽기 쉬운 명시적 고정 스텝 갱신이다.
-- 그래프가 아주 작고 되먹임 엣지가 없다.
-- 3D 위치, vessel, damage patch, 입자 형태는 공간적 은유일 뿐이다.
-- Molecule Explorer의 구조 뷰포트가 아직 비어 있다.
-- Mol* 쪽에는 반응 event animation이 없어서, 그 표현은 legacy 장면에만 남아 있다.
-- WebGL canvas 안의 텍스트는 접근성 트리에 안 들어가서, 별도 DOM mirror가 약 2초 간격으로
-  같은 snapshot을 다시 설명한다.
-- 모션 줄이기에서는 Brownian motion과 카메라 스토리를 끄고 pulse·glow를 정적인 단서로
-  바꾼다. 선택, replay, Inspector, 모델 제어는 그대로다.
