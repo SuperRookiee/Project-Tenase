@@ -44,6 +44,7 @@ export type CameraStoryTarget = EntityId | 'full' | null;
 export type WorkspaceId =
   | 'simulation'
   | 'scenarios'
+  | 'parameters'
   | 'reactions'
   | 'molecules'
   | 'knowledge';
@@ -51,6 +52,7 @@ export type WorkspaceId =
 const WORKSPACE_IDS: readonly WorkspaceId[] = [
   'simulation',
   'scenarios',
+  'parameters',
   'reactions',
   'molecules',
   'knowledge',

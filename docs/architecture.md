@@ -159,6 +159,8 @@ Taking "user drags the vessel damage slider" as the representative case:
 | [`entities.ts`](../src/simulation/entities.ts) | The thirteen node definitions and factory helpers for level/flag records. |
 | [`reactions.ts`](../src/simulation/reactions.ts) | The seven edge definitions, plus `GRAPH_EDGES` — a flattened edge list used by the accessibility mirror and the fallback view. |
 | [`engine.ts`](../src/simulation/engine.ts) | The deterministic fixed-step integrator. The largest and most load-bearing file. |
+| [`scenarioSweep.ts`](../src/simulation/scenarioSweep.ts) | Batch runner behind the scenario-comparison workspace. Builds a fresh engine per specification, runs it to the end of an observation window, and sweeps one axis at a time. |
+| [`parameterMap.ts`](../src/simulation/parameterMap.ts) | Batch runner behind the parameter-map workspace. Sweeps two axes into a grid, and models replenishment plans (single, sustained, or repeated at an interval). Shares `STRUCTURE_THRESHOLD` and `SUSTAINED_RATE` with `scenarioSweep.ts` so the two workspaces agree on what the baseline means. |
 | [`scheduler.ts`](../src/simulation/scheduler.ts) | Dependency-injected animation-frame loop. Owns *when* the engine advances; the engine owns *how far*. |
 | [`snapshots.ts`](../src/simulation/snapshots.ts) | `RingBuffer`, the snapshot/event capacities, and `clampSnapshotIndex`. |
 | [`particles.ts`](../src/simulation/particles.ts) | Pure allocation of the 400-instance visual budget across nodes. |

@@ -12,6 +12,7 @@ import { selectDisplayed } from '@/store/simulationStore';
 import { getEntity } from '@/simulation/entities';
 
 const ScenarioComparisonWorkspace = dynamic(() => import('@/components/workspaces/ScenarioComparisonWorkspace').then((module) => module.ScenarioComparisonWorkspace));
+const ParameterMapWorkspace = dynamic(() => import('@/components/workspaces/ParameterMapWorkspace').then((module) => module.ParameterMapWorkspace));
 const ReactionExplorerWorkspace = dynamic(() => import('@/components/workspaces/ReactionExplorerWorkspace').then((module) => module.ReactionExplorerWorkspace));
 const MoleculeExplorerWorkspace = dynamic(() => import('@/components/workspaces/MoleculeExplorerWorkspace').then((module) => module.MoleculeExplorerWorkspace));
 const KnowledgeWorkspace = dynamic(() => import('@/components/workspaces/KnowledgeWorkspace').then((module) => module.KnowledgeWorkspace));
@@ -65,6 +66,7 @@ export function AppShell() {
       <main id="main-region" tabIndex={-1} className="relative min-h-0 flex-1 overflow-y-auto">
         {workspace === 'simulation' ? <SimulationWorkspace /> : null}
         {workspace === 'scenarios' ? <ScenarioComparisonWorkspace /> : null}
+        {workspace === 'parameters' ? <ParameterMapWorkspace /> : null}
         {workspace === 'reactions' ? <ReactionExplorerWorkspace /> : null}
         {workspace === 'molecules' ? <MoleculeExplorerWorkspace /> : null}
         {workspace === 'knowledge' ? <KnowledgeWorkspace /> : null}

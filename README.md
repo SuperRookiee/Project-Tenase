@@ -56,6 +56,19 @@ trickle. The two lower charts sweep supply and input strength from 0 to 1 and pl
 attainment ratio against the reference run. One sweep is twenty-two runs, so the sweeps wait
 for the settings to settle before catching up.
 
+**Parameter map** — also independent of the live engine. Where scenario comparison follows
+one axis and draws a curve, `parameterMap.ts` sweeps *two* at once and fills a 17×17 plane,
+running the graph to the end of the window in every cell. Any two of nine settings can go on
+the axes: the supply setpoint of a reservoir node, the damage signal, or a *hold* level. A
+hold matters because transient nodes have no supply setpoint at all — the engine only relaxes
+reservoir nodes toward one — so the only way to put Thrombin or Factor IXa at a level is to
+keep topping it up from outside. The cells are colored by one of four outcomes, including the
+fraction of the window the terminal structural node spent below the baseline. A replenishment
+plan pushes a chosen node up from outside on a schedule — once, continuously, or at a fixed
+interval a set number of times — and when it is switched on, the whole plane is recomputed
+with it applied, so you can watch how far it moves a starved corner. The grid is a few
+hundred runs, so it is filled one row per animation frame rather than in a single block.
+
 **Reaction explorer** — `buildAnalysisEvents` reinterprets engine events and snapshots as
 seven kinds — activation, binding, complex formation, dissociation, inhibition, decay,
 reaction — and lays them out on a timeline. Dissociation and decay are not emitted by the
@@ -198,6 +211,7 @@ src/
     reactions.ts           data-driven reaction graph
     engine.ts              deterministic fixed-step integrator
     scenarioSweep.ts       batch scenario runner and sweeps
+    parameterMap.ts        two-axis grid runner and replenishment plans
     scheduler.ts           dependency-injected animation clock
     snapshots.ts           ring buffers for history and events
     reactionTrace.ts       upstream path / neighbor computation

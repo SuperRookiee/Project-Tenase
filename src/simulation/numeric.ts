@@ -93,3 +93,82 @@ export function formatPercentOfScale(value: number): string {
   if (!Number.isFinite(value)) return '—';
   return `전체 척도의 ${Math.round(clamp01(value) * 100)}%`;
 }
+
+/**
+ * 눈금 기준의 기본값.
+ *
+ * 0–1 소수를 직접 타이핑하는 대신 정수로 읽고 쓰기 위한 표시용 기준일 뿐이다. 저장되는
+ * 값은 언제나 0–1 무차원 값이고, 이 숫자가 무엇의 몇 분의 몇인지는 이 모형이 아는 바가
+ * 아니다. 단위 이름을 붙이지 않는 이유가 그것이다.
+ */
+export const DEFAULT_DISPLAY_SCALE = 3000;
+
+/** 눈금 기준으로 쓸 수 있는 값인지. 정수여야 표시값이 정수로 떨어진다. */
+export function isDisplayScale(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 1_000_000
+  );
+}
+
+/**
+ * 눈금 기준에 맞춘 정수 표시값을 0–1 값으로 되돌린다.
+ *
+ * `parseNormalized`를 대신 쓰면 안 된다. 그쪽은 1을 넘는 값을 조용히 1로 잘라 내므로
+ * `parseNormalized('450')`이 아무 소리 없이 1이 된다. 눈금 위의 숫자는 정규화 값이
+ * 아니므로 들어오는 길목이 따로 있어야 한다.
+ *
+ * 반올림은 반드시 `Math.round`다. `Math.floor`나 `parseInt`는 어긋난다 — 기준이
+ * 3000일 때 0.009 * 3000이 26.999999999999996이라 27이 26으로 내려앉는다.
+ *
+ * 규약은 `parseNormalized`와 같다. 쓸 수 없는 입력에는 `null`을 돌려주고 호출자가
+ * 조용히 무시한다. 빈 문자열 검사가 특히 중요한데, `Number('')`가 0이라 이 검사가
+ * 없으면 필드를 비우는 순간 0이 확정되기 때문이다.
+ */
+export function parseScaled(input: unknown, scale: number): number | null {
+  if (!isDisplayScale(scale)) return null;
+
+  let candidate: number;
+  if (typeof input === 'number') {
+    candidate = input;
+  } else if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (trimmed === '') return null;
+    candidate = Number(trimmed);
+  } else {
+    return null;
+  }
+
+  if (!Number.isFinite(candidate)) return null;
+
+  const steps = Math.round(candidate);
+  // 양 끝은 나누지 않고 상수를 그대로 돌려준다. 경계가 정확해지고, -0이 저장소로
+  // 흘러 들어가지 않는다. `Object.is(0, -0)`이 거짓이라 -0은 값이 바뀐 것으로 읽힌다.
+  if (steps <= 0) return NORMALIZED_MIN;
+  if (steps >= scale) return NORMALIZED_MAX;
+  return steps / scale;
+}
+
+/**
+ * 0–1 값을 눈금 기준에 맞춘 정수 문자열로 적는다.
+ *
+ * `clamp01`보다 먼저 유한성을 확인한다. `clamp01`은 유한하지 않은 값에 예외를 던지는
+ * 유일한 헬퍼라, 순서가 바뀌면 표시가 '—'로 끝나는 대신 렌더 도중 예외가 난다.
+ */
+export function formatScaled(value: number, scale: number): string {
+  if (!Number.isFinite(value) || !isDisplayScale(scale)) return '—';
+  return String(Math.round(clamp01(value) * scale));
+}
+
+/**
+ * 눈금 표시일 때 범위 입력이 보조 기술에 읽어 주는 문구.
+ *
+ * 눈에 보이는 정수와 전체 척도 대비 비율을 함께 담는다. "전체 척도"라는 말이 기준값과
+ * 헷갈릴 수 있으므로 기준을 숫자로 밝혀 적는다.
+ */
+export function formatScaledValueText(value: number, scale: number): string {
+  if (!Number.isFinite(value) || !isDisplayScale(scale)) return '—';
+  return `기준 ${scale} 중 ${formatScaled(value, scale)} · ${formatPercentOfScale(value)}`;
+}

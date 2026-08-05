@@ -25,7 +25,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { DisplayScaleSelect } from '@/components/controls/DisplayScaleSelect';
 import { NormalizedSlider } from '@/components/controls/NormalizedSlider';
+import { WorkspaceHeader } from '@/components/dashboard/WorkspaceHeader';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   INPUT_TARGETS,
@@ -42,7 +44,7 @@ import {
   type SweepPoint,
 } from '@/simulation/scenarioSweep';
 import { getEntity } from '@/simulation/entities';
-import { formatNormalized } from '@/simulation/numeric';
+import { DEFAULT_DISPLAY_SCALE, formatNormalized } from '@/simulation/numeric';
 import { useSimulationStore } from '@/store/simulationStore';
 
 const CHART_HEIGHT = 190;
@@ -324,6 +326,8 @@ export function ScenarioComparisonWorkspace() {
   const [inputTarget, setInputTarget] = useState<InputTargetId>('factorIX');
   const [inputMode, setInputMode] = useState<InputMode>('pulse');
   const [inputAmount, setInputAmount] = useState(0.4);
+  /** 표시 전용. `null`이면 0–1 소수로 읽는다. 실행에 들어가는 값은 언제나 0–1이다. */
+  const [displayScale, setDisplayScale] = useState<number | null>(DEFAULT_DISPLAY_SCALE);
   const [inputTime, setInputTime] = useState(2);
 
   const clampedInputTime = Math.min(inputTime, duration);
@@ -388,28 +392,24 @@ export function ScenarioComparisonWorkspace() {
 
   return (
     <div className="mx-auto w-full max-w-[100rem] p-3 sm:p-5">
-      <div className="mb-6">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-accent">시나리오 비교</p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight">개시 노드와 회복 곡선</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">
-          개시 노드(Factor IX)의 공급값을 바꿔 가며 중심 출력 노드(Thrombin)가 얼마나
-          만들어지는지, 그리고 종단 구조 노드(Fibrin)가 어디까지 쌓이는지 비교합니다.
-          노드를 밖에서 밀어 올렸을 때 기준 실행에 얼마나 가까워지는지도 함께 쓸어봅니다.
-        </p>
-        <p className="mt-3 max-w-3xl rounded-lg border border-caution/40 bg-caution/5 p-3 text-xs leading-relaxed text-ink-1">
-          <strong className="font-semibold">범위 고지.</strong> 이 화면의 모든 축은 0–1
-          무차원 값입니다. 노드가 응고 생물학의 이름을 빌려 쓰지만 그것은 순전히 라벨일
-          뿐이고, 어떤 상태·절차·프로토콜·제품·집단에도 대응하지 않습니다.
-          &ldquo;외부 입력&rdquo;은 가상 그래프의 한 노드를 밀어 올리는 조작에 붙인
-          이름이며, 여기 나오는 숫자는 어느 것도 측정값이 아닙니다.
-        </p>
-      </div>
+      <WorkspaceHeader
+        eyebrow="시나리오 비교"
+        title="개시 노드와 회복 곡선"
+        inputTerm="외부 입력"
+        description="개시 노드(Factor IX)의 공급값을 바꿔 가며 중심 출력 노드(Thrombin)가 얼마나 만들어지는지, 종단 구조 노드(Fibrin)가 어디까지 쌓이는지, 그리고 노드를 밖에서 밀어 올렸을 때 기준 실행에 얼마나 가까워지는지를 비교합니다."
+      />
 
       <div className="grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
         <section aria-label="시나리오 설정" className="flex flex-col gap-4">
           <div className="rounded-xl border border-line bg-surface-1 p-4">
             <h3 className="text-sm font-semibold">반응망 상태</h3>
             <div className="mt-3 flex flex-col gap-4">
+              <DisplayScaleSelect
+                id="scenario-display-scale"
+                value={displayScale}
+                onChange={setDisplayScale}
+                description="공급값과 입력 세기 슬라이더를 소수 대신 정수로 읽고 쓰기 위한 기준이다. 저장되는 값은 바뀌지 않는다."
+              />
               <NormalizedSlider
                 id="scenario-factor-supply"
                 label="개시 노드 공급값"
@@ -418,6 +418,7 @@ export function ScenarioComparisonWorkspace() {
                 accentColor={factorEntity.color}
                 glyph={factorEntity.glyph}
                 shortCode={factorEntity.shortCode}
+                displayScale={displayScale ?? undefined}
                 description={`Factor IX 노드가 머무는 수준. 기준 실행은 ${formatNormalized(REFERENCE_FACTOR_SUPPLY, 2)}을 쓴다.`}
               />
               <NormalizedSlider
@@ -513,6 +514,7 @@ export function ScenarioComparisonWorkspace() {
                 accentColor={targetEntity.color}
                 glyph={targetEntity.glyph}
                 shortCode={targetEntity.shortCode}
+                displayScale={displayScale ?? undefined}
                 description="0이면 밀어 올리지 않은 것과 완전히 같다."
               />
               <div className="flex flex-col gap-1.5">

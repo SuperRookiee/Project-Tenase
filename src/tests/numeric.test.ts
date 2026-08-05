@@ -7,15 +7,20 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_DISPLAY_SCALE,
   NORMALIZED_MAX,
   NORMALIZED_MIN,
   assertNormalized,
   clamp01,
   formatNormalized,
   formatPercentOfScale,
+  formatScaled,
+  formatScaledValueText,
+  isDisplayScale,
   isNormalized,
   lerp,
   parseNormalized,
+  parseScaled,
 } from '@/simulation/numeric';
 
 describe('parseNormalized', () => {
@@ -175,5 +180,123 @@ describe('표시 헬퍼', () => {
     expect(formatPercentOfScale(0)).toBe('전체 척도의 0%');
     expect(formatPercentOfScale(1)).toBe('전체 척도의 100%');
     expect(formatPercentOfScale(Number.NaN)).toBe('—');
+  });
+});
+
+describe('눈금 기준', () => {
+  it('1 이상의 정수만 기준으로 받아들인다', () => {
+    for (const value of [1, 100, DEFAULT_DISPLAY_SCALE, 1_000_000]) {
+      expect(isDisplayScale(value)).toBe(true);
+    }
+    for (const value of [0, -1, 2.5, Number.NaN, Number.POSITIVE_INFINITY, 1_000_001, '3000', null]) {
+      expect(isDisplayScale(value)).toBe(false);
+    }
+  });
+});
+
+describe('parseScaled', () => {
+  const SCALE = DEFAULT_DISPLAY_SCALE;
+
+  it('눈금 위의 정수를 0–1 값으로 되돌린다', () => {
+    expect(parseScaled('450', SCALE)).toBe(0.15);
+    expect(parseScaled(2100, SCALE)).toBe(0.7);
+    expect(parseScaled('1500', SCALE)).toBe(0.5);
+  });
+
+  it('양 끝을 정확히 맞춘다', () => {
+    expect(parseScaled('0', SCALE)).toBe(NORMALIZED_MIN);
+    expect(parseScaled(SCALE, SCALE)).toBe(NORMALIZED_MAX);
+    // 나눗셈을 거치지 않으므로 위쪽 끝이 0.9999...가 되는 일이 없다.
+    expect(parseScaled(String(SCALE), SCALE)).toBe(1);
+  });
+
+  it('범위를 벗어난 값은 잘라 내되 정규화 경로로 새지 않는다', () => {
+    // parseNormalized였다면 '450'을 조용히 1로 만들었을 것이다. 여기서는 눈금 위의
+    // 숫자로 읽으므로 0.15가 나와야 한다.
+    expect(parseNormalized('450')).toBe(1);
+    expect(parseScaled('450', SCALE)).toBe(0.15);
+    expect(parseScaled('9999', SCALE)).toBe(1);
+    expect(parseScaled('-5', SCALE)).toBe(0);
+  });
+
+  it('음수 쪽 경계에서 -0을 만들지 않는다', () => {
+    // -0이 저장되면 Object.is 비교가 값이 바뀐 것으로 읽어 무거운 재계산을 부른다.
+    const parsed = parseScaled('-0.4', SCALE);
+    expect(parsed).toBe(0);
+    expect(Object.is(parsed, -0)).toBe(false);
+  });
+
+  it('소수 입력은 버리지 않고 반올림한다', () => {
+    expect(parseScaled('450.4', SCALE)).toBe(0.15);
+    expect(parseScaled('449.6', SCALE)).toBe(0.15);
+    expect(parseScaled('1.5e3', SCALE)).toBe(0.5);
+  });
+
+  it('쓸 수 없는 입력은 거부한다', () => {
+    for (const input of ['', '   ', 'abc', 'NaN', 'Infinity', true, null, undefined, {}, []]) {
+      expect(parseScaled(input, SCALE), `${JSON.stringify(input)}은 거부돼야 한다`).toBeNull();
+    }
+  });
+
+  it('기준 자체가 쓸 수 없으면 거부한다', () => {
+    expect(parseScaled('450', 0)).toBeNull();
+    expect(parseScaled('450', 2.5)).toBeNull();
+    expect(parseScaled('450', Number.NaN)).toBeNull();
+  });
+});
+
+describe('formatScaled', () => {
+  it('0–1 값을 눈금 위의 정수로 적는다', () => {
+    expect(formatScaled(0.15, DEFAULT_DISPLAY_SCALE)).toBe('450');
+    expect(formatScaled(0, DEFAULT_DISPLAY_SCALE)).toBe('0');
+    expect(formatScaled(1, DEFAULT_DISPLAY_SCALE)).toBe('3000');
+  });
+
+  it('유한하지 않은 값에 예외를 던지지 않고 자리표시자를 낸다', () => {
+    // clamp01은 이런 값에 예외를 던지므로 순서가 뒤집히면 렌더 도중 터진다.
+    expect(formatScaled(Number.NaN, DEFAULT_DISPLAY_SCALE)).toBe('—');
+    expect(formatScaled(Number.POSITIVE_INFINITY, DEFAULT_DISPLAY_SCALE)).toBe('—');
+  });
+
+  it('범위를 벗어난 값을 잘라 낸다', () => {
+    expect(formatScaled(450, DEFAULT_DISPLAY_SCALE)).toBe('3000');
+    expect(formatScaled(-1, DEFAULT_DISPLAY_SCALE)).toBe('0');
+  });
+});
+
+describe('눈금 왕복', () => {
+  it('기준 위의 모든 정수가 그대로 되돌아온다', () => {
+    // Math.floor나 parseInt였다면 여기서 어긋난다. 기준이 3000일 때 0.009 * 3000이
+    // 26.999999999999996이라 27이 26으로 내려앉기 때문이다.
+    const scale = DEFAULT_DISPLAY_SCALE;
+    for (let steps = 0; steps <= scale; steps += 1) {
+      const parsed = parseScaled(String(steps), scale);
+      expect(parsed).not.toBeNull();
+      expect(formatScaled(parsed as number, scale)).toBe(String(steps));
+    }
+  });
+
+  it('다른 기준에서도 어긋나지 않는다', () => {
+    for (const scale of [1, 10, 100, 256, 1000, 4096, 9999]) {
+      for (let steps = 0; steps <= scale; steps += 1) {
+        const parsed = parseScaled(steps, scale);
+        expect(formatScaled(parsed as number, scale), `기준 ${scale}의 ${steps}`).toBe(
+          String(steps),
+        );
+      }
+    }
+  });
+});
+
+describe('formatScaledValueText', () => {
+  it('눈에 보이는 정수와 전체 척도 대비 비율을 함께 읽어 준다', () => {
+    const text = formatScaledValueText(0.15, DEFAULT_DISPLAY_SCALE);
+    expect(text).toContain('450');
+    expect(text).toContain('3000');
+    expect(text).toContain('15%');
+  });
+
+  it('유한하지 않은 값에 자리표시자를 낸다', () => {
+    expect(formatScaledValueText(Number.NaN, DEFAULT_DISPLAY_SCALE)).toBe('—');
   });
 });
